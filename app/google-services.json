@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1083553249861",
+    "project_id": "rsrawatjalan-3563e",
+    "storage_bucket": "rsrawatjalan-3563e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1083553249861:android:4ae9263dd016405179412c",
+        "android_client_info": {
+          "package_name": "com.example.aplikasi_rumah_sakit_rawat_jalan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBROCfVk6JOny2MR_jnaf0-wfqYjk4-3zg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

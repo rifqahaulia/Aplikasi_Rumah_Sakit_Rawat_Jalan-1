@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/imgDokter"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/ic_doctor"
+            android:background="@drawable/circle_background"
+            android:backgroundTint="#3498DB"
+            android:padding="12dp"
+            android:layout_marginEnd="16dp"
+            android:scaleType="centerInside" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvNamaDokter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dr. Ahmad"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#2C3E50" />
+
+            <TextView
+                android:id="@+id/tvSpesialis"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Spesialis Mata"
+                android:textSize="14sp"
+                android:textColor="#27AE60"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/tvJadwal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Senin, Rabu • 08:00-14:00"
+                android:textSize="12sp"
+                android:textColor="#7F8C8D"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tersedia"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:background="@drawable/status_selesai_bg"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:layout_gravity="center_vertical" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
