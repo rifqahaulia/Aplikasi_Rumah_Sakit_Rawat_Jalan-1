@@ -64,4 +64,21 @@ object AntrianManager {
     fun deleteAntrian(appointmentId: Int) {
         antrianList.removeAll { it.id == appointmentId }
     }
+
+    // ✅ Method baru untuk update status
+    fun updateStatus(appointmentId: Int, newStatus: StatusAppointment) {
+        val index = antrianList.indexOfFirst { it.id == appointmentId }
+        if (index != -1) {
+            val appointment = antrianList[index]
+            antrianList[index] = appointment.copy(status = newStatus)
+            android.util.Log.d("AntrianManager", "Status updated: ID=$appointmentId, Status=$newStatus")
+        } else {
+            android.util.Log.w("AntrianManager", "Appointment not found: ID=$appointmentId")
+        }
+    }
+
+    // ✅ Method baru untuk get appointment by ID
+    fun getAppointmentById(appointmentId: Int): Appointment? {
+        return antrianList.find { it.id == appointmentId }
+    }
 }
