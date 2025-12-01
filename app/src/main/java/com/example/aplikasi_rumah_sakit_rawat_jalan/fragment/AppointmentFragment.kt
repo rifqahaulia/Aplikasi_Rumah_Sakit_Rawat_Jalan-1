@@ -23,6 +23,12 @@ class AppointmentFragment : Fragment() {
     private lateinit var appointmentAdapter: AppointmentAdapter
     private val appointmentList = mutableListOf<Appointment>()
 
+    // ✅ Handler untuk notifikasi
+    private val notificationHandler = Handler(Looper.getMainLooper())
+    private val notificationRunnable = Runnable {
+        checkAndShowNotification()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -38,10 +44,8 @@ class AppointmentFragment : Fragment() {
         setupRecyclerView()
         loadDummyData()
 
-        // Cek notifikasi setelah 2 detik (simulasi)
-        Handler(Looper.getMainLooper()).postDelayed({
-            checkAndShowNotification()
-        }, 2000)
+        // ✅ Cek notifikasi setelah 2 detik dengan safe check
+        notificationHandler.postDelayed(notificationRunnable, 2000)
     }
 
     override fun onResume() {
@@ -93,6 +97,11 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun checkAndShowNotification() {
+        // ✅ CRITICAL FIX: Check context terlebih dahulu
+        if (!isAdded || context == null) {
+            return
+        }
+
         // Cek setiap antrian yang statusnya MENUNGGU atau TERDAFTAR
         appointmentList.forEach { appointment ->
             if (appointment.status == StatusAppointment.MENUNGGU ||
@@ -111,7 +120,13 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun showAlertDialog(appointment: Appointment, sisaAntrian: Int) {
-        val alertDialog = android.app.AlertDialog.Builder(requireContext())
+        // ✅ CRITICAL FIX: Check context sebelum buat AlertDialog
+        val ctx = context
+        if (ctx == null || !isAdded) {
+            return
+        }
+
+        val alertDialog = android.app.AlertDialog.Builder(ctx)
             .setTitle("⚠️ Segera Bersiap!")
             .setMessage(
                 "Antrian Anda hampir tiba!\n\n" +
@@ -124,20 +139,29 @@ class AppointmentFragment : Fragment() {
                 dialog.dismiss()
             }
             .setNeutralButton("Lihat Detail") { _, _ ->
-                Toast.makeText(
-                    context,
-                    "Detail antrian #${appointment.nomorAntrian}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                context?.let {
+                    Toast.makeText(
+                        it,
+                        "Detail antrian #${appointment.nomorAntrian}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
             .setCancelable(false)
             .create()
 
-        alertDialog.show()
+        // ✅ Check sekali lagi sebelum show
+        if (isAdded && context != null) {
+            alertDialog.show()
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+
+        // ✅ CRITICAL: Cancel handler untuk avoid memory leak
+        notificationHandler.removeCallbacks(notificationRunnable)
+
         _binding = null
     }
 }

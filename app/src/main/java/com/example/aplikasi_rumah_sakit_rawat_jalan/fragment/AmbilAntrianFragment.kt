@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,8 +41,11 @@ class AmbilAntrianFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Log.d("AmbilAntrian", "onViewCreated called")
+
         // Ambil data dokter dari arguments
         selectedDokter = arguments?.getParcelable("dokter")
+        Log.d("AmbilAntrian", "selectedDokter: ${selectedDokter?.nama}")
 
         setupUI()
         setupListeners()
@@ -74,13 +78,23 @@ class AmbilAntrianFragment : Fragment() {
 
         // Button Batal
         binding.btnBatal.setOnClickListener {
-            (activity as? MainActivity)?.navigateToFragment(AppointmentFragment())
+            // Gunakan safe navigation
+            if (isAdded && activity != null) {
+                (activity as? MainActivity)?.navigateToFragment(AppointmentFragment())
+            }
         }
     }
 
     private fun showDatePicker() {
+        // ✅ FIX: Check context terlebih dahulu
+        val ctx = context
+        if (ctx == null || !isAdded) {
+            Toast.makeText(activity, "Mohon tunggu sebentar", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val datePicker = DatePickerDialog(
-            requireContext(),
+            ctx,  // ✅ Gunakan context yang sudah di-check
             { _, year, month, dayOfMonth ->
                 selectedDate.set(year, month, dayOfMonth)
                 updateDateDisplay()
@@ -117,10 +131,21 @@ class AmbilAntrianFragment : Fragment() {
     }
 
     private fun submitAntrian() {
+        Log.d("AmbilAntrian", "submitAntrian called")
+
+        // ✅ FIX: Check context sebelum proses
+        if (!isAdded || context == null) {
+            Log.e("AmbilAntrian", "Fragment not added or context is null!")
+            return
+        }
+
+        Log.d("AmbilAntrian", "Context OK, processing...")
+
         val keluhan = binding.etKeluhan.text.toString().trim()
         val catatan = binding.etCatatan.text.toString().trim()
 
         selectedDokter?.let { dokter ->
+            Log.d("AmbilAntrian", "Creating appointment...")
             // Buat appointment baru
             val newAppointment = Appointment(
                 id = AntrianManager.getNextId(),
@@ -138,9 +163,11 @@ class AmbilAntrianFragment : Fragment() {
 
             // Simpan ke manager lokal
             AntrianManager.addAntrian(newAppointment)
+            Log.d("AmbilAntrian", "Added to AntrianManager")
 
             // Simpan ke Firestore (koleksi "antrian")
             val db = Firebase.firestore
+            Log.d("AmbilAntrian", "Saving to Firestore...")
             val data = hashMapOf(
                 "id" to newAppointment.id,
                 "pasienId" to newAppointment.pasienId,
@@ -158,23 +185,39 @@ class AmbilAntrianFragment : Fragment() {
             db.collection("antrian")
                 .add(data)
                 .addOnSuccessListener {
-                    Toast.makeText(
-                        context,
-                        "✅ Antrian berhasil dibuat!\nNomor Antrian: ${newAppointment.nomorAntrian}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Log.d("AmbilAntrian", "Firestore save SUCCESS")
+
+                    // ✅ FIX: Safe Toast
+                    context?.let { ctx ->
+                        Toast.makeText(
+                            ctx,
+                            "✅ Antrian berhasil dibuat!\nNomor Antrian: ${newAppointment.nomorAntrian}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
 
                     // Balik ke AppointmentFragment setelah delay kecil
+                    Log.d("AmbilAntrian", "Navigating back to AppointmentFragment...")
                     Handler(Looper.getMainLooper()).postDelayed({
-                        (activity as? MainActivity)?.navigateToFragment(AppointmentFragment())
+                        if (isAdded && activity != null) {
+                            Log.d("AmbilAntrian", "Navigation executing...")
+                            (activity as? MainActivity)?.navigateToFragment(AppointmentFragment())
+                        } else {
+                            Log.e("AmbilAntrian", "Cannot navigate: isAdded=$isAdded, activity=$activity")
+                        }
                     }, 500)
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(
-                        context,
-                        "❌ Gagal menyimpan ke Firestore: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Log.e("AmbilAntrian", "Firestore save FAILED: ${e.message}", e)
+
+                    // ✅ FIX: Safe Toast
+                    context?.let { ctx ->
+                        Toast.makeText(
+                            ctx,
+                            "❌ Gagal menyimpan ke Firestore: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
         }
     }
